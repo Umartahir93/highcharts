@@ -94,24 +94,6 @@ H.Series.prototype.keyboardMoveVertical = true;
 
 
 /**
- * Strip HTML tags away from a string. Used for aria-label attributes, painting
- * on a canvas will fail if the text contains tags.
- *
- * @private
- * @function stripTags
- *
- * @param  {string} s
- *         The input string
- *
- * @return {string}
- *         The filtered string
- */
-function stripTags(s) {
-    return typeof s === 'string' ? s.replace(/<\/?[^>]+(>|$)/g, '') : s;
-}
-
-
-/**
  * Get the index of a point in a series. This is needed when using e.g. data
  * grouping.
  *
@@ -1399,21 +1381,10 @@ H.Chart.prototype.addKeyboardNavigationModules = function () {
                     chart.options.legend.keyboardNavigation.enabled) !== false;
             },
 
-            // Make elements focusable and accessible
+            // Make elements focusable
             init: function (direction) {
                 chart.legend.allItems.forEach(function (item) {
                     item.legendGroup.element.setAttribute('tabindex', '-1');
-                    item.legendGroup.element.setAttribute('role', 'button');
-                    item.legendGroup.element.setAttribute(
-                        'aria-label',
-                        chart.langFormat(
-                            'accessibility.legendItem',
-                            {
-                                chart: chart,
-                                itemName: stripTags(item.name)
-                            }
-                        )
-                    );
                 });
                 // Focus first/last item
                 chart.highlightLegendItem(

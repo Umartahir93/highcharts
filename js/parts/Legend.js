@@ -970,6 +970,8 @@ Highcharts.Legend.prototype = {
         if (!this.proximate) {
             this.positionItems();
         }
+
+        fireEvent(this, 'afterRender');
     },
 
     /**

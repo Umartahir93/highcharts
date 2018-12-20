@@ -327,7 +327,8 @@ H.setOptions({ lang: {
         mapZoomIn: 'Zoom chart',
         mapZoomOut: 'Zoom out chart',
         rangeSelectorButton: 'Select range {buttonText}',
-        legendItem: 'Toggle visibility of series {itemName}',
+        legendLabel: 'Toggle series visibility',
+
         /* eslint-enable max-len */
 
         /**

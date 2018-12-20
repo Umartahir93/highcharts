@@ -238,15 +238,15 @@ H.setOptions({
                             '. ' + htmlencode(options.subtitle.text) :
                             ''
                     ) +
-                    '</h3><h4>' + chart.langFormat(
-                        'accessibility.longDescriptionHeading', formatContext
-                    ) + '</h4><div>' +
-                    (
-                        options.chart.description || chart.langFormat(
-                            'accessibility.noDescription', formatContext
-                        )
-                    ) +
-                    '</div><h4>' + chart.langFormat(
+                    '</h3>' + (
+                        options.chart.description ? (
+                            '<h4>' + chart.langFormat(
+                                'accessibility.longDescriptionHeading',
+                                formatContext
+                            ) +
+                            '</h4><div>' + options.chart.description + '</div>'
+                        ) : ''
+                    ) + '<h4>' + chart.langFormat(
                         'accessibility.structureHeading', formatContext
                     ) + '</h4><div>' +
                     (
@@ -510,7 +510,8 @@ H.Point.prototype.buildPointInfoString = function () {
     }
 
     return (this.index + 1) + '. ' + infoString + '.' +
-        (this.description ? ' ' + this.description : '');
+        (this.description ? ' ' + this.description : '') +
+        (series.name ? ' ' + series.name : '');
 };
 
 
@@ -764,6 +765,60 @@ H.Chart.prototype.addScreenReaderRegion = function (id, tableId) {
 };
 
 
+// Add ARIA to legend
+addEvent(H.Legend, 'afterRender', function () {
+    var group = this.group,
+        items = this.allItems,
+        chart = this.chart;
+    if (group && items && items.length) {
+        group.attr({
+            role: 'region',
+            'aria-label': chart.langFormat('accessibility.legendLabel')
+        });
+
+        if (this.box) {
+            this.box.attr('aria-hidden', 'true');
+        }
+
+        items.forEach(function (item) {
+            var itemGroup = item.legendGroup,
+                text = item.legendItem,
+                visible = item.visible,
+                label = chart.langFormat(
+                    'accessibility.legendItem',
+                    {
+                        chart: chart,
+                        itemName: stripTags(item.name)
+                    }
+                );
+            if (itemGroup && text) {
+                itemGroup.attr({
+                    role: 'button',
+                    'aria-pressed': visible ? 'false' : 'true'
+                });
+                if (label) {
+                    itemGroup.attr('aria-label', label);
+                }
+                text.attr('aria-hidden', 'false');
+            }
+        });
+    }
+});
+
+
+// Handle show/hide series
+addEvent(H.Series, 'show', function () {
+    if (this.legendGroup) {
+        this.legendGroup.attr('aria-pressed', 'false');
+    }
+});
+addEvent(H.Series, 'hide', function () {
+    if (this.legendGroup) {
+        this.legendGroup.attr('aria-pressed', 'true');
+    }
+});
+
+
 // Make chart container accessible, and wrap table functionality.
 H.Chart.prototype.callbacks.push(function (chart) {
     var options = chart.options,
@@ -868,7 +923,9 @@ H.Chart.prototype.callbacks.push(function (chart) {
 
     // Hide text elements from screen readers
     [].forEach.call(textElements, function (el) {
-        el.setAttribute('aria-hidden', 'true');
+        if (el.getAttribute('aria-hidden') !== 'false') {
+            el.setAttribute('aria-hidden', 'true');
+        }
     });
 
     // Add top-secret screen reader region
