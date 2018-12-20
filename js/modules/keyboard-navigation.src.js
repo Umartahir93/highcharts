@@ -47,6 +47,9 @@ H.extend(H.SVGElement.prototype, {
         var bb = this.getBBox(),
             pad = pick(margin, 3);
 
+        bb.x += this.translateX ? this.translateX : 0;
+        bb.y += this.translateY ? this.translateY : 0;
+
         this.focusBorder = this.renderer.rect(
             bb.x - pad,
             bb.y - pad,
@@ -1101,6 +1104,32 @@ H.Chart.prototype.addKeyboardNavigationModules = function () {
                     chart.tooltip.hide(0);
                 }
                 delete chart.highlightedPoint;
+            }
+        }),
+
+        // Reset zoom
+        navModuleFactory('resetZoom', [
+            // Tab/Up/Down/Left/Right - just move
+            [[9, 37, 38, 39, 40], function (keyCode, e) {
+                return this.move((
+                        keyCode === 9 && e.shiftKey ||
+                        keyCode === 38 || keyCode === 37
+                    ) ? -1 : 1
+                );
+            }],
+            // Space/Enter - select
+            [[13, 32], function () {
+                chart.zoomOut();
+            }]
+        ], {
+            // Only run if we have a reset zoom button
+            validate: function () {
+                return chart.resetZoomButton && chart.resetZoomButton.box;
+            },
+            init: function () {
+                chart.setFocusToElement(
+                    chart.resetZoomButton.box, chart.resetZoomButton
+                );
             }
         }),
 
